@@ -31,7 +31,18 @@ function Menu() {
             ? `https://www.themealdb.com/api/json/v1/1/filter.php?c=${selectedCategory}`
             : 'https://www.themealdb.com/api/json/v1/1/search.php?s='
         );
-        setMeals(response.data.meals || []);
+        
+        // Fetch full details for each meal
+        const mealsWithDetails = await Promise.all(
+          (response.data.meals || []).slice(0, 9).map(async (meal) => {
+            const detailsResponse = await axios.get(
+              `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`
+            );
+            return detailsResponse.data.meals[0];
+          })
+        );
+        
+        setMeals(mealsWithDetails);
       } catch (error) {
         console.error('Error fetching meals:', error);
       }
